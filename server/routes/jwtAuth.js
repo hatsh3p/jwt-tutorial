@@ -2,9 +2,11 @@ const router = require("express").Router();
 const pool = require("../db");
 const bcrypt = require("bcrypt");
 const jwtGenerator = require("../utils/jwtGenerator");
+const validInfo = require("../middleware/validInfo");
+const authorization = require("../middleware/authorization");
 
 // Registering.
-router.post("/register", async (req, res) => {
+router.post("/register", validInfo, async (req, res) => {
     try {
         // Step 1: Destructure the req.body (name, email, password).
         const { name, email, password } = req.body;
@@ -18,7 +20,7 @@ router.post("/register", async (req, res) => {
             return res.status(401).send("User already exists."); // Note: Status code 401 is unauthenticated. Status code 403 is unauthorized.
         }
 
-        // Step 3: Bcrypt the user password.
+        // Step 3: Encrypt the user password using bcrypt.
         const saltRound = 10;
         const salt = await bcrypt.genSalt(saltRound); // These functions take time hence await!
         const bcryptPassword = await bcrypt.hash(password, salt); // Encrypts the password.
@@ -38,7 +40,7 @@ router.post("/register", async (req, res) => {
 })
 
 // Login route.
-router.post("/login", async (req, res) => {
+router.post("/login", validInfo, async (req, res) => {
     try {
         // Step 1: Destructure the req.body.
         const { email, password } = req.body;
@@ -65,6 +67,16 @@ router.post("/login", async (req, res) => {
     } catch (err) {
         console.error(err.message);
     }
-})
+});
+
+router.get("/is-verify", authorization, async (req, res) => {
+    try {
+        // If token is valid
+        res.json(true);
+    } catch (error) {
+        console.error(err.message);
+        res.status(500).send("Server Error.");
+    }
+});
 
 module.exports = router;

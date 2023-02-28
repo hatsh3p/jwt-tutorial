@@ -35,4 +35,3 @@ Contain register, login, and verify.
 Password is encrypted and inserted into database in encrypted form.
 Login is similar and generates a token as well.
 authorize.js checks whether the token exists.
-
